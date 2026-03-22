@@ -199,7 +199,15 @@ var T={en:{
   move_up:'Up',move_down:'Down',enabled:'Enabled',disabled:'Disabled',
   no_servers:'No servers added yet',
   theme_dark:'Dark',theme_light:'Light',theme_system:'System',
-  prev:'Prev',next:'Next',page:'Page'
+  prev:'Prev',next:'Next',page:'Page',
+  tip_health:'How often to check tunnel status (ping through tun0). Default: 30s',
+  tip_failover:'Automatically switch to next server if current fails. Threshold = consecutive failures before switch',
+  tip_vpn_mode:'General: all traffic through VPN except exclusions. Selective: only exclusions through VPN',
+  tip_killswitch:'Block all traffic if VPN connection drops, preventing data leaks',
+  tip_dns:'DNS servers for resolving through tunnel. Leave empty to use system DNS',
+  tip_exclusions:'Domains or IPs to handle differently based on VPN mode. One per line or comma-separated',
+  tip_mtu:'Maximum Transmission Unit size. Lower values improve stability, higher improve speed. Default: 1280',
+  health_interval:'Health check interval (s)'
 },ru:{
   servers:'\u0421\u0435\u0440\u0432\u0435\u0440\u044b',monitor:'\u041c\u043e\u043d\u0438\u0442\u043e\u0440',settings:'\u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438',
   connected:'\u041f\u043e\u0434\u043a\u043b\u044e\u0447\u0435\u043d\u043e',disconnected:'\u041e\u0442\u043a\u043b\u044e\u0447\u0435\u043d\u043e',connecting:'\u041f\u043e\u0434\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0435...',
@@ -228,7 +236,15 @@ var T={en:{
   move_up:'\u0412\u0432\u0435\u0440\u0445',move_down:'\u0412\u043d\u0438\u0437',enabled:'\u0412\u043a\u043b.',disabled:'\u0412\u044b\u043a\u043b.',
   no_servers:'\u0421\u0435\u0440\u0432\u0435\u0440\u044b \u0435\u0449\u0451 \u043d\u0435 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u044b',
   theme_dark:'\u0422\u0451\u043c\u043d\u0430\u044f',theme_light:'\u0421\u0432\u0435\u0442\u043b\u0430\u044f',theme_system:'\u0421\u0438\u0441\u0442\u0435\u043c\u0430',
-  prev:'\u041d\u0430\u0437\u0430\u0434',next:'\u0412\u043f\u0435\u0440\u0451\u0434',page:'\u0421\u0442\u0440.'
+  prev:'\u041d\u0430\u0437\u0430\u0434',next:'\u0412\u043f\u0435\u0440\u0451\u0434',page:'\u0421\u0442\u0440.',
+  tip_health:'\u041a\u0430\u043a \u0447\u0430\u0441\u0442\u043e \u043f\u0440\u043e\u0432\u0435\u0440\u044f\u0442\u044c \u0442\u0443\u043d\u043d\u0435\u043b\u044c (ping \u0447\u0435\u0440\u0435\u0437 tun0). \u041f\u043e \u0443\u043c\u043e\u043b\u0447.: 30\u0441',
+  tip_failover:'\u0410\u0432\u0442\u043e-\u043f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0435 \u043d\u0430 \u0441\u043b\u0435\u0434\u0443\u044e\u0449\u0438\u0439 \u0441\u0435\u0440\u0432\u0435\u0440 \u043f\u0440\u0438 \u043f\u0430\u0434\u0435\u043d\u0438\u0438. \u041f\u043e\u0440\u043e\u0433 = \u043a\u043e\u043b-\u0432\u043e \u043e\u0448\u0438\u0431\u043e\u043a \u043f\u043e\u0434\u0440\u044f\u0434',
+  tip_vpn_mode:'\u041e\u0431\u0449\u0438\u0439: \u0432\u0435\u0441\u044c \u0442\u0440\u0430\u0444\u0438\u043a \u0447\u0435\u0440\u0435\u0437 VPN \u043a\u0440\u043e\u043c\u0435 \u0438\u0441\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0439. \u0412\u044b\u0431\u043e\u0440\u043e\u0447\u043d\u044b\u0439: \u0442\u043e\u043b\u044c\u043a\u043e \u0438\u0441\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u044f \u0447\u0435\u0440\u0435\u0437 VPN',
+  tip_killswitch:'\u0411\u043b\u043e\u043a\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0442\u0440\u0430\u0444\u0438\u043a \u043f\u0440\u0438 \u043f\u0430\u0434\u0435\u043d\u0438\u0438 VPN, \u043f\u0440\u0435\u0434\u043e\u0442\u0432\u0440\u0430\u0449\u0430\u044f \u0443\u0442\u0435\u0447\u043a\u0438',
+  tip_dns:'DNS \u0441\u0435\u0440\u0432\u0435\u0440\u044b \u0434\u043b\u044f \u0440\u0435\u0437\u043e\u043b\u0432\u0438\u043d\u0433\u0430 \u0447\u0435\u0440\u0435\u0437 \u0442\u0443\u043d\u043d\u0435\u043b\u044c. \u041f\u0443\u0441\u0442\u043e = \u0441\u0438\u0441\u0442\u0435\u043c\u043d\u044b\u0435',
+  tip_exclusions:'\u0414\u043e\u043c\u0435\u043d\u044b/IP \u0434\u043b\u044f \u043e\u0441\u043e\u0431\u043e\u0439 \u043c\u0430\u0440\u0448\u0440\u0443\u0442\u0438\u0437\u0430\u0446\u0438\u0438 \u0432 \u0437\u0430\u0432\u0438\u0441\u0438\u043c\u043e\u0441\u0442\u0438 \u043e\u0442 \u0440\u0435\u0436\u0438\u043c\u0430 VPN',
+  tip_mtu:'\u0420\u0430\u0437\u043c\u0435\u0440 \u043f\u0430\u043a\u0435\u0442\u0430. \u041c\u0435\u043d\u044c\u0448\u0435 = \u0441\u0442\u0430\u0431\u0438\u043b\u044c\u043d\u0435\u0435, \u0431\u043e\u043b\u044c\u0448\u0435 = \u0431\u044b\u0441\u0442\u0440\u0435\u0435. \u041f\u043e \u0443\u043c\u043e\u043b\u0447.: 1280',
+  health_interval:'\u0418\u043d\u0442\u0435\u0440\u0432\u0430\u043b \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0438 (\u0441)'
 }};
 
 var A='/api';
@@ -246,6 +262,8 @@ async function api(p,o){o=o||{};var r=await fetch(A+p,{headers:{'Content-Type':'
 function toast(m,e){S.toast={m:m,e:!!e};R();setTimeout(function(){S.toast=null;R()},3500)}
 function fmtUptime(sec){if(!sec)return '\u2014';var d=Math.floor(sec/86400),h=Math.floor((sec%86400)/3600),m=Math.floor((sec%3600)/60);if(d>0)return d+'d '+h+'h '+m+'m';if(h>0)return h+'h '+m+'m';return m+'m'}
 function withLoading(btn,fn){if(!btn)return fn();var orig=btn.textContent;btn.disabled=true;btn.textContent='...';return Promise.resolve(fn()).finally(function(){if(btn.parentNode){btn.disabled=false;btn.textContent=orig}})}
+function tip(key){var text=t('tip_'+key);if(!text||text===('tip_'+key))return null;return h('span',{style:{cursor:'help',fontSize:'11px',color:'var(--ac)',marginLeft:'4px',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'14px',height:'14px',borderRadius:'50%',border:'1px solid var(--ac)',flexShrink:'0'},title:text},'\u2139')}
+function fl(label,tipKey){return h('label',{className:'fl',style:{display:'flex',alignItems:'center'}},label,tipKey?tip(tipKey):null)}
 
 function h(t,a){var e=document.createElement(t);var dv=null;if(a){var ks=Object.keys(a);for(var i=0;i<ks.length;i++){var k=ks[i],v=a[k];if(k==='style'&&typeof v==='object')Object.assign(e.style,v);else if(k.substr(0,2)==='on')e.addEventListener(k.slice(2).toLowerCase(),v);else if(k==='className')e.className=v;else if(k==='value'){dv=v}else if(k==='checked'||k==='selected'||k==='disabled'){if(v!==false&&v!=null)e[k]=v}else e.setAttribute(k,v)}}for(var i=2;i<arguments.length;i++){var x=arguments[i];if(Array.isArray(x)){for(var j=0;j<x.length;j++)an(e,x[j])}else an(e,x)}if(dv!==null)e.value=dv;return e}
 function an(e,x){if(x==null||x===false||x===undefined)return;if(typeof x==='number')x=String(x);if(typeof x==='string')e.appendChild(document.createTextNode(x));else if(x.nodeType)e.appendChild(x);else if(Array.isArray(x)){for(var i=0;i<x.length;i++)an(e,x[i])}}
@@ -487,50 +505,54 @@ function renderFailoverLog(){
 
 function renderSettings(){
   var cfg=S.settings;
+  var dnsArr=Array.isArray(cfg.dns_upstreams)?cfg.dns_upstreams:[];
+  var exclArr=Array.isArray(cfg.exclusions)?cfg.exclusions:[];
   var hci,afe,aft,vpm,kse,dnsi,exci,mtui;
   return h('div',null,
     h('div',{className:'card'},
       h('div',{className:'card-t'},t('settings')),
       h('div',{className:'grid grid2'},
         h('div',{className:'fg'},
-          h('label',{className:'fl'},t('health_check')+' '+t('interval')+' (s)'),
-          hci=h('input',{className:'input input-m',type:'number',min:'10',max:'300',value:cfg.health_check_interval||60})),
+          fl(t('health_interval'),'health'),
+          hci=h('input',{className:'input input-m',type:'number',min:'10',max:'300',value:String(cfg.health_check_interval||30)})),
         h('div',{className:'fg'},
-          h('label',{className:'fl'},t('auto_failover')),
+          fl(t('auto_failover'),'failover'),
           h('div',{style:{display:'flex',alignItems:'center',gap:'10px'}},
             afe=h('label',{className:'toggle'},h('input',{type:'checkbox',checked:cfg.auto_failover!==false}),h('span',{className:'slider'})),
             h('span',{style:{fontSize:'11px',color:'var(--tx3)'}},t('threshold')+':'),
-            aft=h('input',{className:'input input-m',type:'number',min:'1',max:'10',value:cfg.failover_threshold||3,style:{width:'60px'}}),
+            aft=h('input',{className:'input input-m',type:'number',min:'1',max:'10',value:String(cfg.failover_threshold||3),style:{width:'60px'}}),
             h('span',{style:{fontSize:'10px',color:'var(--tx3)'}},t('failures'))))),
       h('div',{className:'grid grid2'},
         h('div',{className:'fg'},
-          h('label',{className:'fl'},t('vpn_mode')),
-          vpm=h('select',{className:'input',value:cfg.vpn_mode||'general'},
-            h('option',{value:'general'},t('general')),
-            h('option',{value:'selective'},t('selective')))),
+          fl(t('vpn_mode'),'vpn_mode'),
+          vpm=h('select',{className:'input'},
+            h('option',{value:'general',selected:(cfg.vpn_mode||'general')==='general'},t('general')),
+            h('option',{value:'selective',selected:cfg.vpn_mode==='selective'},t('selective')))),
         h('div',{className:'fg'},
-          h('label',{className:'fl'},t('killswitch')),
-          kse=h('label',{className:'toggle',style:{marginTop:'8px'}},h('input',{type:'checkbox',checked:!!cfg.kill_switch}),h('span',{className:'slider'})))),
+          fl(t('killswitch'),'killswitch'),
+          kse=h('label',{className:'toggle',style:{marginTop:'8px'}},h('input',{type:'checkbox',checked:cfg.killswitch_enabled!==false}),h('span',{className:'slider'})))),
       h('div',{className:'grid grid2'},
         h('div',{className:'fg'},
-          h('label',{className:'fl'},t('dns')),
-          dnsi=h('input',{className:'input input-m',value:cfg.dns_upstreams||'',placeholder:'8.8.8.8, 1.1.1.1'})),
+          fl(t('dns'),'dns'),
+          dnsi=h('input',{className:'input input-m',value:dnsArr.join(', '),placeholder:'8.8.8.8, 1.1.1.1'})),
         h('div',{className:'fg'},
-          h('label',{className:'fl'},t('mtu')),
-          mtui=h('input',{className:'input input-m',type:'number',value:cfg.mtu||1400}))),
+          fl(t('mtu'),'mtu'),
+          mtui=h('input',{className:'input input-m',type:'number',min:'1200',max:'1500',value:String(cfg.mtu_size||1280)}))),
       h('div',{className:'fg'},
-        h('label',{className:'fl'},t('exclusions_label')),
-        exci=h('textarea',{className:'input input-m',value:cfg.exclusions||''})),
+        fl(t('exclusions_label'),'exclusions'),
+        exci=h('textarea',{className:'input input-m',value:exclArr.join('\n'),placeholder:'example.com\n10.0.0.0/8',style:{minHeight:'80px'}})),
       h('button',{className:'btn btn-p',onClick:function(){
+        var dnsVal=dnsi.value.trim()?dnsi.value.split(',').map(function(s){return s.trim()}).filter(Boolean):[];
+        var exclVal=exci.value.trim()?exci.value.split('\n').map(function(s){return s.trim()}).filter(Boolean):[];
         saveSettings({
-          health_check_interval:parseInt(hci.value)||60,
+          health_check_interval:parseInt(hci.value)||30,
           auto_failover:afe.querySelector('input').checked,
           failover_threshold:parseInt(aft.value)||3,
           vpn_mode:vpm.value,
-          kill_switch:kse.querySelector('input').checked,
-          dns_upstreams:dnsi.value,
-          mtu:parseInt(mtui.value)||1400,
-          exclusions:exci.value
+          killswitch_enabled:kse.querySelector('input').checked,
+          dns_upstreams:dnsVal,
+          mtu_size:parseInt(mtui.value)||1280,
+          exclusions:exclVal
         })}},t('save'))),
     h('div',{className:'card'},
       h('div',{className:'card-t'},t('change_password')),
