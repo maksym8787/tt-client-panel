@@ -292,7 +292,7 @@ async function activateServer(id,btn){await withLoading(btn,async function(){try
 async function editServer(id,data){try{await api('/servers/'+id,{method:'PUT',body:JSON.stringify(data)});toast(t('saved'));S.modal=null;await loadAll();R()}catch(e){toast(e.message,true)}}
 async function reorderServers(order){try{await api('/servers/reorder',{method:'PUT',body:JSON.stringify({order:order})})}catch(e){toast(e.message,true)}}
 async function svcAct(a,btn){await withLoading(btn,async function(){try{await api('/service/'+a,{method:'POST'});toast(a+' ok');setTimeout(loadStatus,2000)}catch(e){toast(e.message,true)}})}
-async function saveSettings(data){try{await api('/settings',{method:'PUT',body:JSON.stringify(data)});toast(t('saved'))}catch(e){toast(e.message,true)}}
+async function saveSettings(data){try{var r=await api('/settings',{method:'PUT',body:JSON.stringify(data)});S.settings=r.settings||data;toast(t('saved'));R()}catch(e){toast(e.message,true)}}
 async function chgAdmin(pw,btn){await withLoading(btn,async function(){try{await api('/change-password',{method:'POST',body:JSON.stringify({password:pw})});toast(t('saved'));S.modal=null;S.auth=false;R()}catch(e){toast(e.message,true)}})}
 
 var _rTimer=null;
@@ -585,11 +585,7 @@ function renderSettings(){
           mtu_size:parseInt(mtui.value)||1280,
           exclusions:exclVal
         })}},t('save'))),
-    h('div',{className:'card'},
-      h('div',{className:'card-t'},t('change_password')),
-      (function(){var pi=h('input',{className:'input',type:'password',placeholder:t('new_password'),style:{maxWidth:'300px'}});
-        return h('div',{className:'bg'},pi,
-          h('button',{className:'btn btn-p btn-sm',onClick:function(e){if(pi.value.length<6){toast('Min 6 chars',true);return}chgAdmin(pi.value,e.currentTarget)}},t('save')))})()));
+    null);
 }
 
 var _refreshTimer=null;
