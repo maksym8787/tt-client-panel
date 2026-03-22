@@ -6,6 +6,7 @@ FRONTEND_HTML = r'''<!DOCTYPE html>
 <title>TrustTunnel Client</title>
 <link rel="icon" type="image/png" sizes="64x64" href="/static/favicon.png?v=2">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" crossorigin="anonymous">
+<script src="/static/chart.umd.min.js" defer></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -166,6 +167,8 @@ textarea.input{resize:vertical;min-height:80px}.input-m{font-family:var(--m);fon
 .add-tab{flex:1;padding:6px;border:none;border-radius:5px;background:transparent;color:var(--tx3);cursor:pointer;font-size:11px;font-weight:600;transition:.15s;text-align:center}
 .add-tab.on{background:var(--sf2);color:var(--ac)}
 select.input{appearance:auto}
+.chart-wrap{position:relative;height:200px}
+@media(max-width:640px){.chart-wrap{height:160px}}
 </style>
 </head>
 <body>
@@ -207,7 +210,8 @@ var T={en:{
   tip_dns:'DNS servers for resolving through tunnel. Leave empty to use system DNS',
   tip_exclusions:'Domains or IPs to handle differently based on VPN mode. One per line or comma-separated',
   tip_mtu:'Maximum Transmission Unit size. Lower values improve stability, higher improve speed. Default: 1280',
-  health_interval:'Health check interval (s)'
+  health_interval:'Health check interval (s)',
+  network_traffic:'Network Traffic (tun0)',download:'Download',upload:'Upload'
 },ru:{
   servers:'\u0421\u0435\u0440\u0432\u0435\u0440\u044b',monitor:'\u041c\u043e\u043d\u0438\u0442\u043e\u0440',settings:'\u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438',
   connected:'\u041f\u043e\u0434\u043a\u043b\u044e\u0447\u0435\u043d\u043e',disconnected:'\u041e\u0442\u043a\u043b\u044e\u0447\u0435\u043d\u043e',connecting:'\u041f\u043e\u0434\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0435...',
@@ -244,13 +248,14 @@ var T={en:{
   tip_dns:'DNS \u0441\u0435\u0440\u0432\u0435\u0440\u044b \u0434\u043b\u044f \u0440\u0435\u0437\u043e\u043b\u0432\u0438\u043d\u0433\u0430 \u0447\u0435\u0440\u0435\u0437 \u0442\u0443\u043d\u043d\u0435\u043b\u044c. \u041f\u0443\u0441\u0442\u043e = \u0441\u0438\u0441\u0442\u0435\u043c\u043d\u044b\u0435',
   tip_exclusions:'\u0414\u043e\u043c\u0435\u043d\u044b/IP \u0434\u043b\u044f \u043e\u0441\u043e\u0431\u043e\u0439 \u043c\u0430\u0440\u0448\u0440\u0443\u0442\u0438\u0437\u0430\u0446\u0438\u0438 \u0432 \u0437\u0430\u0432\u0438\u0441\u0438\u043c\u043e\u0441\u0442\u0438 \u043e\u0442 \u0440\u0435\u0436\u0438\u043c\u0430 VPN',
   tip_mtu:'\u0420\u0430\u0437\u043c\u0435\u0440 \u043f\u0430\u043a\u0435\u0442\u0430. \u041c\u0435\u043d\u044c\u0448\u0435 = \u0441\u0442\u0430\u0431\u0438\u043b\u044c\u043d\u0435\u0435, \u0431\u043e\u043b\u044c\u0448\u0435 = \u0431\u044b\u0441\u0442\u0440\u0435\u0435. \u041f\u043e \u0443\u043c\u043e\u043b\u0447.: 1280',
-  health_interval:'\u0418\u043d\u0442\u0435\u0440\u0432\u0430\u043b \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0438 (\u0441)'
+  health_interval:'\u0418\u043d\u0442\u0435\u0440\u0432\u0430\u043b \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0438 (\u0441)',
+  network_traffic:'\u0421\u0435\u0442\u0435\u0432\u043e\u0439 \u0442\u0440\u0430\u0444\u0438\u043a (tun0)',download:'\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430',upload:'\u041e\u0442\u0434\u0430\u0447\u0430'
 }};
 
 var A='/api';
 var S={auth:false,setup:false,loading:true,tab:'servers',
   servers:[],activeServerId:'',status:null,failoverLog:[],settings:{},
-  toast:null,modal:null,lang:localStorage.getItem('tt_lang')||'en',
+  toast:null,modal:null,netHistory:[],lang:localStorage.getItem('tt_lang')||'en',
   theme:localStorage.getItem('tt_theme')||'system',addMode:'deeplink',flPage:0};
 
 function t(k){return(T[S.lang]||T.en)[k]||T.en[k]||k}
@@ -277,6 +282,7 @@ async function doLogout(){await api('/logout',{method:'POST'});S.auth=false;R()}
 async function loadAll(){await Promise.all([loadServers(),loadStatus()]);R()}
 async function loadServers(){try{var r=await api('/servers');S.servers=r.servers||[];S.activeServerId=r.active_server_id||''}catch(e){toast(e.message,true)}}
 async function loadStatus(){try{S.status=await api('/status')}catch(e){}}
+async function loadNetHistory(){try{var r=await api('/net-history');S.netHistory=r.history||[]}catch(e){}}
 async function loadFailoverLog(){try{var r=await api('/failover-log');S.failoverLog=r.log||[]}catch(e){toast(e.message,true)}R()}
 async function loadSettings(){try{var r=await api('/settings');S.settings=r.settings||r||{}}catch(e){toast(e.message,true)}R()}
 
@@ -301,6 +307,7 @@ function _doRender(){
     if(!S.auth){frag.appendChild(renderLogin());root.replaceChildren(frag);return}
     frag.appendChild(renderApp());
     root.replaceChildren(frag);
+    if(S.tab==='monitor')setTimeout(drawNetChart,50);
   }catch(err){console.error('R() error:',err)}
 }
 
@@ -346,7 +353,7 @@ function renderApp(){
         h('button',{className:'btn btn-xs btn-ghost',onClick:function(){S.modal={t:'chgadmin'};R()}},t('password_btn')),
         h('button',{className:'btn btn-xs btn-ghost',onClick:doLogout},t('logout')))),
     h('div',{className:'tabs'},tabs.map(function(tb){return h('button',{className:'tab'+(S.tab===tb.id?' on':''),
-      onClick:function(){S.tab=tb.id;if(tb.id==='servers')loadAll();if(tb.id==='monitor'){loadStatus();loadFailoverLog()}if(tb.id==='settings')loadSettings();R()}},tb.label)})),
+      onClick:function(){S.tab=tb.id;if(tb.id==='servers')loadAll();if(tb.id==='monitor'){loadStatus();loadFailoverLog();loadNetHistory().then(function(){drawNetChart()})}if(tb.id==='settings')loadSettings();R()}},tb.label)})),
     h('div',{className:'tab-content'},S.tab==='servers'?renderServers():S.tab==='monitor'?renderMonitor():renderSettings()));
 }
 
@@ -450,6 +457,25 @@ function renderAddServer(){
       h('button',{className:'btn btn-p',onClick:function(){addServer({hostname:hn.value,addresses:ad.value,username:un.value,password:pw.value,name:nm.value,protocol:proto.value})}},t('add_server'))));
 }
 
+function fmtBps(b){if(!b||b<0)return '0 B/s';if(b>=1073741824)return(b/1073741824).toFixed(1)+' GB/s';if(b>=1048576)return(b/1048576).toFixed(1)+' MB/s';if(b>=1024)return(b/1024).toFixed(0)+' KB/s';return b+' B/s'}
+var _netChart=null;
+function drawNetChart(){
+  if(typeof Chart==='undefined')return;
+  var canvas=document.getElementById('net-chart');
+  if(!canvas)return;
+  var data=S.netHistory||[];
+  var labels=data.map(function(d){var dt=new Date(d.ts*1000);return String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0')});
+  var rxData=data.map(function(d){return d.rx_bps||0});
+  var txData=data.map(function(d){return d.tx_bps||0});
+  var isDark=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim().startsWith('#0');
+  var gridColor=isDark?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)';
+  var tickColor=isDark?'rgba(255,255,255,.4)':'rgba(0,0,0,.4)';
+  if(_netChart){try{if(_netChart.canvas!==canvas){_netChart.destroy();_netChart=null}else{_netChart.data.labels=labels;_netChart.data.datasets[0].data=rxData;_netChart.data.datasets[1].data=txData;_netChart.update('none');return}}catch(e){_netChart=null}}
+  _netChart=new Chart(canvas,{type:'line',data:{labels:labels,datasets:[
+    {label:t('download'),data:rxData,borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.08)',borderWidth:1.5,fill:true,tension:0.3,pointRadius:0,pointHitRadius:8},
+    {label:t('upload'),data:txData,borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,.06)',borderWidth:1.5,fill:true,tension:0.3,pointRadius:0,pointHitRadius:8}
+  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:true,position:'top',labels:{color:tickColor,font:{size:10,family:'DM Sans'},boxWidth:10,padding:8}},tooltip:{callbacks:{label:function(c){return c.dataset.label+': '+fmtBps(c.raw)}}}},scales:{x:{ticks:{color:tickColor,font:{size:9},maxTicksLimit:10},grid:{color:gridColor}},y:{ticks:{color:tickColor,font:{size:9},callback:function(v){return fmtBps(v)}},grid:{color:gridColor},beginAtZero:true}}}})
+}
 function renderMonitor(){
   var st=S.status;var hl=st&&st.health?st.health:{};var ok=hl.tun_up;var srv=st&&st.active_server;
   return h('div',null,
@@ -475,6 +501,9 @@ function renderMonitor(){
         h('div',{className:'stat'},
           h('div',{className:'stat-l'},t('hostname')),
           h('div',{className:'stat-v',style:{fontSize:'14px'}},srv?srv.hostname:'\u2014')))),
+    h('div',{className:'card'},
+      h('div',{className:'card-t'},t('network_traffic')),
+      h('div',{className:'chart-wrap'},h('canvas',{id:'net-chart'}))),
     h('div',{className:'card'},
       h('div',{className:'card-t'},t('service_controls')),
       h('div',{className:'bg'},
@@ -563,7 +592,7 @@ function renderSettings(){
 }
 
 var _refreshTimer=null;
-function startRefresh(){clearInterval(_refreshTimer);_refreshTimer=setInterval(function(){if(S.auth&&(S.tab==='servers'||S.tab==='monitor')){loadStatus().then(R)}},15000)}
+function startRefresh(){clearInterval(_refreshTimer);_refreshTimer=setInterval(function(){if(S.auth&&(S.tab==='servers'||S.tab==='monitor')){loadStatus().then(R);if(S.tab==='monitor')loadNetHistory().then(function(){drawNetChart()})}},15000)}
 
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&S.modal){S.modal=null;R()}});
 applyTheme();checkAuth().then(function(){if(S.auth)loadAll()});startRefresh();

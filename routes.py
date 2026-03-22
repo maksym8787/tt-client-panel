@@ -20,7 +20,7 @@ from servers import (
     reorder_servers, activate_server, get_active_server_id, parse_deeplink,
     _check_tun_up,
 )
-from health import get_health_status
+from health import get_health_status, get_net_history
 from frontend import FRONTEND_HTML
 
 app = FastAPI(title="TrustTunnel Client Panel", docs_url=None, redoc_url=None)
@@ -180,6 +180,13 @@ async def do_reorder(request: Request):
     order = body.get("order", [])
     await asyncio.to_thread(reorder_servers, order)
     return {"ok": True}
+
+
+@app.get("/api/net-history")
+async def net_history(request: Request):
+    await require_auth(request)
+    data = await asyncio.to_thread(get_net_history)
+    return {"history": data}
 
 
 @app.get("/api/failover-log")
