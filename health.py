@@ -49,10 +49,12 @@ def _save_net_history():
 
 
 def get_health_status():
+    tun_up = _check_tun_up()
+    tun_ip = _get_tun_ip()
     with _health_lock:
         return {
-            "tun_up": _check_tun_up(),
-            "tun_ip": _get_tun_ip(),
+            "tun_up": tun_up,
+            "tun_ip": tun_ip,
             "latency_ms": _last_latency,
             "fail_count": _fail_count,
             "last_check": _last_check_ts,

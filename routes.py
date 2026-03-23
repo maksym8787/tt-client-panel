@@ -147,6 +147,15 @@ async def create_server(request: Request):
     return {"ok": True, "server": server}
 
 
+@app.put("/api/servers/reorder")
+async def do_reorder(request: Request):
+    await require_auth(request)
+    body = await request.json()
+    order = body.get("order", [])
+    await asyncio.to_thread(reorder_servers, order)
+    return {"ok": True}
+
+
 @app.put("/api/servers/{server_id}")
 async def edit_server(server_id: str, request: Request):
     await require_auth(request)
@@ -171,15 +180,6 @@ async def do_activate(server_id: str, request: Request):
     await require_auth(request)
     result = await asyncio.to_thread(activate_server, server_id)
     return result
-
-
-@app.put("/api/servers/reorder")
-async def do_reorder(request: Request):
-    await require_auth(request)
-    body = await request.json()
-    order = body.get("order", [])
-    await asyncio.to_thread(reorder_servers, order)
-    return {"ok": True}
 
 
 @app.get("/api/net-history")

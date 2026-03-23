@@ -262,8 +262,9 @@ var S={auth:false,setup:false,loading:true,tab:'servers',
   theme:localStorage.getItem('tt_theme')||'system',addMode:'deeplink',flPage:0};
 
 function t(k){return(T[S.lang]||T.en)[k]||T.en[k]||k}
-function setLang(l){S.lang=l;localStorage.setItem('tt_lang',l);R()}
-function setTheme(th){S.theme=th;localStorage.setItem('tt_theme',th);applyTheme();R()}
+function setLang(l){S.lang=l;localStorage.setItem('tt_lang',l);if(!S.auth){_patchLoginText()}else{R()}}
+function setTheme(th){S.theme=th;localStorage.setItem('tt_theme',th);applyTheme();if(!S.auth){_patchLoginText()}else{R()}}
+function _patchLoginText(){var e=document.querySelector('.ls');if(e)e.textContent=S.setup?t('create_admin_pw'):t('enter_admin_pw');var b=document.querySelector('.lc .btn-p');if(b)b.textContent=S.setup?t('create_password'):t('sign_in');var i=document.querySelector('.lc input[type=password]');if(i)i.placeholder=t('password');document.querySelectorAll('.lg button').forEach(function(b,i){b.className=(i===0?S.lang==='en':S.lang==='ru')?'on':''});document.querySelectorAll('.tg button').forEach(function(b,i){b.className=([S.theme==='dark',S.theme==='light',S.theme==='system'][i])?'on':''})}
 function applyTheme(){document.documentElement.setAttribute('data-theme',S.theme)}
 
 async function api(p,o){o=o||{};var r=await fetch(A+p,{headers:{'Content-Type':'application/json'},credentials:'same-origin',...o});var d=await r.json();if(!r.ok)throw new Error(d.detail||r.statusText);return d}
@@ -410,7 +411,7 @@ function renderServers(){
     renderStatusBar(),
     sorted.length===0?h('div',{className:'card',style:{textAlign:'center',padding:'40px',color:'var(--tx3)'}},t('no_servers')):sorted.map(function(s,i){
       var isActive=s.id===S.activeServerId;
-      return h('div',{className:'sc'+(isActive?' sc-active':'')+(s.disabled?' sc-dis':'')},
+      return h('div',{className:'sc'+(isActive?' sc-active':'')+(!s.enabled?' sc-dis':'')},
         h('div',{style:{display:'flex',flexDirection:'column',gap:'2px',marginRight:'10px',alignItems:'center'}},
           h('span',{style:{fontSize:'10px',color:'var(--tx3)',fontFamily:'var(--m)'}},''+(i+1)),
           h('button',{className:'btn btn-xs',disabled:i===0,onClick:function(){moveServer(i,-1)}},'\u25B2'),
@@ -419,8 +420,8 @@ function renderServers(){
           h('div',{style:{display:'flex',alignItems:'center',gap:'8px'}},
             h('span',{className:'sc-name'},s.name||s.hostname),
             isActive?h('span',{className:'badge b-gn'},t('active')):'',
-            s.protocol?h('span',{className:'badge b-bl'},s.protocol):''),
-          h('div',{className:'sc-host'},s.hostname+(s.addresses?' \u2014 '+s.addresses:''))),
+            s.upstream_protocol?h('span',{className:'badge b-bl'},s.upstream_protocol):''),
+          h('div',{className:'sc-host'},s.hostname+(s.addresses&&s.addresses.length?' \u2014 '+(Array.isArray(s.addresses)?s.addresses.join(', '):s.addresses):''))),
         h('div',{className:'sc-acts'},
           !isActive?h('button',{className:'btn btn-sm btn-p',onClick:function(e){activateServer(s.id,e.currentTarget)}},t('activate')):'',
           h('button',{className:'btn btn-sm',onClick:function(){S.modal={t:'edit',s:s};R()}},t('edit')),
@@ -457,7 +458,7 @@ function renderAddServer(){
       h('div',{className:'grid grid2'},
         h('div',{className:'fg'},h('label',{className:'fl'},t('username')),un=h('input',{className:'input'})),
         h('div',{className:'fg'},h('label',{className:'fl'},t('password')),pw=h('input',{className:'input',type:'password'}))),
-      h('button',{className:'btn btn-p',onClick:function(){addServer({hostname:hn.value,addresses:ad.value,username:un.value,password:pw.value,name:nm.value,protocol:proto.value})}},t('add_server'))));
+      h('button',{className:'btn btn-p',onClick:function(){addServer({hostname:hn.value,addresses:[ad.value||hn.value+':443'],username:un.value,password:pw.value,name:nm.value,upstream_protocol:proto.value})}},t('add_server'))));
 }
 
 function fmtBps(b){if(!b||b<0)return '0 B/s';if(b>=1073741824)return(b/1073741824).toFixed(1)+' GB/s';if(b>=1048576)return(b/1048576).toFixed(1)+' MB/s';if(b>=1024)return(b/1024).toFixed(0)+' KB/s';return b+' B/s'}
@@ -532,7 +533,7 @@ function renderFailoverLog(){
         h('thead',null,h('tr',null,
           h('th',null,t('uptime')),h('th',null,t('from_server')),h('th',null,t('to_server')),h('th',null,t('reason')))),
         h('tbody',null,slice.map(function(e){return h('tr',null,
-          h('td',null,new Date(e.ts*1000).toLocaleString()),
+          h('td',null,typeof e.ts==='string'?e.ts.replace('T',' '):new Date(e.ts*1000).toLocaleString()),
           h('td',null,e.from||'\u2014'),h('td',null,e.to||'\u2014'),h('td',null,e.reason||''))})))),
       pages>1?h('div',{style:{display:'flex',justifyContent:'center',gap:'8px',marginTop:'10px'}},
         h('button',{className:'btn btn-xs',disabled:S.flPage===0,onClick:function(){S.flPage--;R()}},t('prev')),
