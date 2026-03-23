@@ -290,7 +290,6 @@ def parse_deeplink(link):
             pass
 
     if link.startswith("tt://") or link.startswith("trusttunnel://"):
-        import base64
         try:
             parts = link.split("://", 1)[1].split("/")
             host_port = parts[0] if parts else ""
