@@ -3,7 +3,7 @@ FRONTEND_HTML = r'''<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
-<title>TrustTunnel Client</title>
+<title>TTClient</title>
 <link rel="icon" type="image/png" sizes="64x64" href="/static/favicon.png?v=2">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" crossorigin="anonymous">
 <script src="/static/chart.umd.min.js" defer></script>
