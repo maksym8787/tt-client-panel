@@ -204,6 +204,7 @@ var T={en:{
   delete_confirm:'Delete this server?',
   move_up:'Up',move_down:'Down',enabled:'Enabled',disabled:'Disabled',
   no_servers:'No servers added yet',on_backup_server:'Running on backup server. Primary server is available.',switch_to_primary:'Switch to primary',
+  external_ip:'External IP',container_uptime:'Container uptime',tt_uptime:'Connection',
   theme_dark:'Dark',theme_light:'Light',theme_system:'System',
   prev:'Prev',next:'Next',page:'Page',
   tip_health:'How often to check tunnel status (ping through tun0). Default: 30s',
@@ -242,6 +243,7 @@ var T={en:{
   delete_confirm:'\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u044d\u0442\u043e\u0442 \u0441\u0435\u0440\u0432\u0435\u0440?',
   move_up:'\u0412\u0432\u0435\u0440\u0445',move_down:'\u0412\u043d\u0438\u0437',enabled:'\u0412\u043a\u043b.',disabled:'\u0412\u044b\u043a\u043b.',
   no_servers:'\u0421\u0435\u0440\u0432\u0435\u0440\u044b \u0435\u0449\u0451 \u043d\u0435 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u044b',on_backup_server:'\u0420\u0430\u0431\u043e\u0442\u0430 \u043d\u0430 \u0440\u0435\u0437\u0435\u0440\u0432\u043d\u043e\u043c \u0441\u0435\u0440\u0432\u0435\u0440\u0435. \u041e\u0441\u043d\u043e\u0432\u043d\u043e\u0439 \u0434\u043e\u0441\u0442\u0443\u043f\u0435\u043d.',switch_to_primary:'\u041f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0438\u0442\u044c\u0441\u044f',
+  external_ip:'\u0412\u043d\u0435\u0448\u043d\u0438\u0439 IP',container_uptime:'\u0410\u043f\u0442\u0430\u0439\u043c \u043a\u043e\u043d\u0442\u0435\u0439\u043d\u0435\u0440\u0430',tt_uptime:'\u0421\u043e\u0435\u0434\u0438\u043d\u0435\u043d\u0438\u0435',
   theme_dark:'\u0422\u0451\u043c\u043d\u0430\u044f',theme_light:'\u0421\u0432\u0435\u0442\u043b\u0430\u044f',theme_system:'\u0421\u0438\u0441\u0442\u0435\u043c\u0430',
   prev:'\u041d\u0430\u0437\u0430\u0434',next:'\u0412\u043f\u0435\u0440\u0451\u0434',page:'\u0421\u0442\u0440.',
   tip_health:'\u041a\u0430\u043a \u0447\u0430\u0441\u0442\u043e \u043f\u0440\u043e\u0432\u0435\u0440\u044f\u0442\u044c \u0442\u0443\u043d\u043d\u0435\u043b\u044c (ping \u0447\u0435\u0440\u0435\u0437 tun0). \u041f\u043e \u0443\u043c\u043e\u043b\u0447.: 30\u0441',
@@ -402,7 +404,7 @@ function renderStatusBar(){
     h('span',{className:'dot '+(ok?'dot-on':'dot-off')}),
     h('span',{style:{fontWeight:600}},ok?t('connected')+(srv?' \u2014 '+srv.name:''):t('disconnected')),
     hl.latency_ms?h('span',{style:{color:'var(--tx3)',fontSize:'12px',fontFamily:'var(--m)',marginLeft:'auto'}},t('latency')+': '+hl.latency_ms+'ms'):'',
-    hl.tun_ip?h('span',{style:{color:'var(--tx3)',fontSize:'12px',fontFamily:'var(--m)'}},t('tun_ip')+': '+hl.tun_ip):'');
+    hl.external_ip?h('span',{style:{color:'var(--tx3)',fontSize:'12px',fontFamily:'var(--m)'}},t('external_ip')+': '+hl.external_ip):'');
 }
 
 function renderServers(){
@@ -502,11 +504,12 @@ function renderMonitor(){
           h('div',{className:'stat-v'},hl.latency_ms?hl.latency_ms+'ms':'\u2014'))),
       h('div',{className:'grid grid3'},
         h('div',{className:'stat'},
-          h('div',{className:'stat-l'},t('tun_ip')),
-          h('div',{className:'stat-v',style:{fontSize:'14px'}},hl.tun_ip?hl.tun_ip:'\u2014')),
+          h('div',{className:'stat-l'},t('external_ip')),
+          h('div',{className:'stat-v',style:{fontSize:'14px'}},hl.external_ip?hl.external_ip:'\u2014')),
         h('div',{className:'stat'},
-          h('div',{className:'stat-l'},t('uptime')),
-          h('div',{className:'stat-v',style:{fontSize:'14px'}},fmtUptime(st?st.uptime_seconds:0))),
+          h('div',{className:'stat-l'},t('container_uptime')),
+          h('div',{className:'stat-v',style:{fontSize:'14px'}},fmtUptime(st?st.uptime_seconds:0)),
+          h('div',{className:'stat-sub'},t('tt_uptime')+': '+fmtUptime(hl.tt_uptime||0))),
         h('div',{className:'stat'},
           h('div',{className:'stat-l'},t('hostname')),
           h('div',{className:'stat-v',style:{fontSize:'14px'}},srv?srv.hostname:'\u2014')))),

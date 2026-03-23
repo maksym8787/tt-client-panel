@@ -48,15 +48,59 @@ def _save_net_history():
         logger.warning("Failed to save net history: %s", e)
 
 
+_external_ip = None
+_external_ip_ts = 0
+
+def _get_external_ip():
+    global _external_ip, _external_ip_ts
+    now = time.time()
+    if _external_ip and (now - _external_ip_ts) < 300:
+        return _external_ip
+    try:
+        r = subprocess.run(
+            ["curl", "-s", "--max-time", "5", "--interface", TUN_IF, "https://api.ipify.org"],
+            capture_output=True, text=True, timeout=8
+        )
+        if r.returncode == 0 and r.stdout.strip():
+            _external_ip = r.stdout.strip()
+            _external_ip_ts = now
+            return _external_ip
+    except Exception:
+        pass
+    return _external_ip
+
+
+def _get_tt_service_uptime():
+    try:
+        r = subprocess.run(
+            ["systemctl", "show", "trusttunnel-client", "-p", "ActiveEnterTimestampMonotonic"],
+            capture_output=True, text=True, timeout=5
+        )
+        for line in r.stdout.splitlines():
+            if line.startswith("ActiveEnterTimestampMonotonic="):
+                v = line.split("=", 1)[1].strip()
+                if v.isdigit() and int(v) > 0:
+                    with open("/proc/uptime") as f:
+                        boot_us = int(float(f.read().split()[0]) * 1_000_000)
+                    return max(0, (boot_us - int(v)) // 1_000_000)
+    except Exception:
+        pass
+    return 0
+
+
 def get_health_status():
     tun_up = _check_tun_up()
     tun_ip = _get_tun_ip()
+    ext_ip = _get_external_ip() if tun_up else None
+    tt_uptime = _get_tt_service_uptime()
     with _health_lock:
         connected = tun_up and _fail_count < 2 and _last_latency is not None
         return {
             "tun_up": tun_up,
             "connected": connected,
             "tun_ip": tun_ip if tun_up else None,
+            "external_ip": ext_ip,
+            "tt_uptime": tt_uptime,
             "latency_ms": _last_latency,
             "fail_count": _fail_count,
             "last_check": _last_check_ts,

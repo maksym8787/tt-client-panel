@@ -218,6 +218,17 @@ def reorder_servers(order):
             id_map[sid]["priority"] = i + 1
     db["servers"] = sorted(servers, key=lambda s: s.get("priority", 999))
     save_panel_db(db)
+    new_primary = db["servers"][0] if db["servers"] else None
+    current_active = db.get("active_server", "")
+    if new_primary and new_primary["id"] != current_active and new_primary.get("enabled", True):
+        logger.info("Priority changed: activating new primary %s", new_primary["id"])
+        result = activate_server(new_primary["id"])
+        if not result.get("ok"):
+            logger.warning("Primary %s failed, trying fallback", new_primary["id"])
+            for s in db["servers"][1:]:
+                if s.get("enabled", True):
+                    activate_server(s["id"])
+                    break
 
 
 def activate_server(server_id):
