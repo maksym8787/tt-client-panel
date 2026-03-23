@@ -397,7 +397,7 @@ function renderModal(){
 }
 
 function renderStatusBar(){
-  var st=S.status;var hl=st&&st.health?st.health:{};var ok=hl.tun_up;var srv=st&&st.active_server;
+  var st=S.status;var hl=st&&st.health?st.health:{};var ok=hl.connected;var srv=st&&st.active_server;
   return h('div',{className:'status-bar'},
     h('span',{className:'dot '+(ok?'dot-on':'dot-off')}),
     h('span',{style:{fontWeight:600}},ok?t('connected')+(srv?' \u2014 '+srv.name:''):t('disconnected')),
@@ -481,7 +481,7 @@ function drawNetChart(){
   ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:true,position:'top',labels:{color:tickColor,font:{size:10,family:'DM Sans'},boxWidth:10,padding:8}},tooltip:{callbacks:{label:function(c){return c.dataset.label+': '+fmtBps(c.raw)}}}},scales:{x:{ticks:{color:tickColor,font:{size:9},maxTicksLimit:10},grid:{color:gridColor}},y:{ticks:{color:tickColor,font:{size:9},callback:function(v){return fmtBps(v)}},grid:{color:gridColor},beginAtZero:true}}}})
 }
 function renderMonitor(){
-  var st=S.status;var hl=st&&st.health?st.health:{};var ok=hl.tun_up;var srv=st&&st.active_server;
+  var st=S.status;var hl=st&&st.health?st.health:{};var ok=hl.connected;var srv=st&&st.active_server;
   return h('div',null,
     h('div',{className:'card'},
       h('div',{className:'card-t'},t('monitor')),

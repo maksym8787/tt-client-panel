@@ -52,9 +52,11 @@ def get_health_status():
     tun_up = _check_tun_up()
     tun_ip = _get_tun_ip()
     with _health_lock:
+        connected = tun_up and _fail_count < 2 and _last_latency is not None
         return {
             "tun_up": tun_up,
-            "tun_ip": tun_ip,
+            "connected": connected,
+            "tun_ip": tun_ip if tun_up else None,
             "latency_ms": _last_latency,
             "fail_count": _fail_count,
             "last_check": _last_check_ts,
