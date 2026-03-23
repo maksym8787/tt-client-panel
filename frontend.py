@@ -203,7 +203,7 @@ var T={en:{
   password_btn:'Password',cancel:'Cancel',confirm:'Confirm',
   delete_confirm:'Delete this server?',
   move_up:'Up',move_down:'Down',enabled:'Enabled',disabled:'Disabled',
-  no_servers:'No servers added yet',
+  no_servers:'No servers added yet',on_backup_server:'Running on backup server. Primary server is available.',switch_to_primary:'Switch to primary',
   theme_dark:'Dark',theme_light:'Light',theme_system:'System',
   prev:'Prev',next:'Next',page:'Page',
   tip_health:'How often to check tunnel status (ping through tun0). Default: 30s',
@@ -241,7 +241,7 @@ var T={en:{
   password_btn:'\u041f\u0430\u0440\u043e\u043b\u044c',cancel:'\u041e\u0442\u043c\u0435\u043d\u0430',confirm:'\u041f\u043e\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u044c',
   delete_confirm:'\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u044d\u0442\u043e\u0442 \u0441\u0435\u0440\u0432\u0435\u0440?',
   move_up:'\u0412\u0432\u0435\u0440\u0445',move_down:'\u0412\u043d\u0438\u0437',enabled:'\u0412\u043a\u043b.',disabled:'\u0412\u044b\u043a\u043b.',
-  no_servers:'\u0421\u0435\u0440\u0432\u0435\u0440\u044b \u0435\u0449\u0451 \u043d\u0435 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u044b',
+  no_servers:'\u0421\u0435\u0440\u0432\u0435\u0440\u044b \u0435\u0449\u0451 \u043d\u0435 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u044b',on_backup_server:'\u0420\u0430\u0431\u043e\u0442\u0430 \u043d\u0430 \u0440\u0435\u0437\u0435\u0440\u0432\u043d\u043e\u043c \u0441\u0435\u0440\u0432\u0435\u0440\u0435. \u041e\u0441\u043d\u043e\u0432\u043d\u043e\u0439 \u0434\u043e\u0441\u0442\u0443\u043f\u0435\u043d.',switch_to_primary:'\u041f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0438\u0442\u044c\u0441\u044f',
   theme_dark:'\u0422\u0451\u043c\u043d\u0430\u044f',theme_light:'\u0421\u0432\u0435\u0442\u043b\u0430\u044f',theme_system:'\u0421\u0438\u0441\u0442\u0435\u043c\u0430',
   prev:'\u041d\u0430\u0437\u0430\u0434',next:'\u0412\u043f\u0435\u0440\u0451\u0434',page:'\u0421\u0442\u0440.',
   tip_health:'\u041a\u0430\u043a \u0447\u0430\u0441\u0442\u043e \u043f\u0440\u043e\u0432\u0435\u0440\u044f\u0442\u044c \u0442\u0443\u043d\u043d\u0435\u043b\u044c (ping \u0447\u0435\u0440\u0435\u0437 tun0). \u041f\u043e \u0443\u043c\u043e\u043b\u0447.: 30\u0441',
@@ -407,8 +407,13 @@ function renderStatusBar(){
 
 function renderServers(){
   var sorted=S.servers.slice().sort(function(a,b){return(a.priority||0)-(b.priority||0)});
+  var onBackup=false;
+  if(S.activeServerId&&sorted.length>1){var primary=sorted[0];if(primary&&primary.id!==S.activeServerId&&primary.enabled)onBackup=true}
   return h('div',null,
     renderStatusBar(),
+    onBackup?h('div',{style:{background:'var(--orbg)',border:'1px solid rgba(245,158,11,.25)',borderRadius:'var(--r2)',padding:'10px 16px',marginBottom:'10px',fontSize:'12px',color:'var(--or)',display:'flex',alignItems:'center',gap:'8px'}},
+      '\u26A0 '+t('on_backup_server'),
+      h('button',{className:'btn btn-xs btn-p',onClick:function(){var pid=sorted[0].id;api('/servers/'+pid+'/activate',{method:'POST'}).then(function(r){toast(r.message||t('activation_ok'));loadAll()}).catch(function(e){toast(e.message,true)})}},t('switch_to_primary'))):null,
     sorted.length===0?h('div',{className:'card',style:{textAlign:'center',padding:'40px',color:'var(--tx3)'}},t('no_servers')):sorted.map(function(s,i){
       var isActive=s.id===S.activeServerId;
       return h('div',{className:'sc'+(isActive?' sc-active':'')+(!s.enabled?' sc-dis':'')},
