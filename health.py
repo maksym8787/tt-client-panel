@@ -4,7 +4,7 @@ import threading
 import time
 from datetime import datetime
 
-from config import TUN_IF, NET_HISTORY_FILE, logger, _shutdown_event
+from config import TUN_IF, NET_HISTORY_FILE, SERVICE_NAME, logger, _shutdown_event
 from auth import load_panel_db, save_panel_db
 from servers import get_active_server_id, get_next_failover_server, activate_server, _check_tun_up
 
@@ -73,7 +73,7 @@ def _get_external_ip():
 def _get_tt_service_uptime():
     try:
         r = subprocess.run(
-            ["systemctl", "show", "trusttunnel-client", "-p", "ActiveState,ActiveEnterTimestampMonotonic"],
+            ["systemctl", "show", SERVICE_NAME, "-p", "ActiveState,ActiveEnterTimestampMonotonic"],
             capture_output=True, text=True, timeout=5
         )
         active = False

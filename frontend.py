@@ -204,7 +204,7 @@ var T={en:{
   delete_confirm:'Delete this server?',
   move_up:'Up',move_down:'Down',enabled:'Enabled',disabled:'Disabled',
   no_servers:'No servers added yet',on_backup_server:'Running on backup server. Primary server is available.',switch_to_primary:'Switch to primary',
-  external_ip:'External IP',container_uptime:'Container',tt_uptime:'Connection',
+  external_ip:'External IP',service_label:'Service',connection_label:'Connection',
   activate_timeout:'Activation timeout (s)',failover_timeout:'Failover timeout (s)',
   tip_activate_timeout:'How long to wait for tun0 after manual server activation (3-30s). Default: 10',
   tip_failover_timeout:'How long to wait for tun0 during auto-failover (3-15s). Shorter = faster switching. Default: 5',
@@ -253,7 +253,7 @@ var T={en:{
   delete_confirm:'\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u044d\u0442\u043e\u0442 \u0441\u0435\u0440\u0432\u0435\u0440?',
   move_up:'\u0412\u0432\u0435\u0440\u0445',move_down:'\u0412\u043d\u0438\u0437',enabled:'\u0412\u043a\u043b.',disabled:'\u0412\u044b\u043a\u043b.',
   no_servers:'\u0421\u0435\u0440\u0432\u0435\u0440\u044b \u0435\u0449\u0451 \u043d\u0435 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u044b',on_backup_server:'\u0420\u0430\u0431\u043e\u0442\u0430 \u043d\u0430 \u0440\u0435\u0437\u0435\u0440\u0432\u043d\u043e\u043c \u0441\u0435\u0440\u0432\u0435\u0440\u0435. \u041e\u0441\u043d\u043e\u0432\u043d\u043e\u0439 \u0434\u043e\u0441\u0442\u0443\u043f\u0435\u043d.',switch_to_primary:'\u041f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0438\u0442\u044c\u0441\u044f',
-  external_ip:'\u0412\u043d\u0435\u0448\u043d\u0438\u0439 IP',container_uptime:'\u041a\u043e\u043d\u0442\u0435\u0439\u043d\u0435\u0440',tt_uptime:'\u0421\u043e\u0435\u0434\u0438\u043d\u0435\u043d\u0438\u0435',
+  external_ip:'\u0412\u043d\u0435\u0448\u043d\u0438\u0439 IP',service_label:'\u0421\u0435\u0440\u0432\u0438\u0441',connection_label:'\u0421\u043e\u0435\u0434\u0438\u043d\u0435\u043d\u0438\u0435',
   activate_timeout:'\u0422\u0430\u0439\u043c\u0430\u0443\u0442 \u0430\u043a\u0442\u0438\u0432\u0430\u0446\u0438\u0438 (\u0441)',failover_timeout:'\u0422\u0430\u0439\u043c\u0430\u0443\u0442 \u043f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u044f (\u0441)',
   tip_activate_timeout:'\u0421\u043a\u043e\u043b\u044c\u043a\u043e \u0436\u0434\u0430\u0442\u044c tun0 \u043f\u0440\u0438 \u0440\u0443\u0447\u043d\u043e\u0439 \u0430\u043a\u0442\u0438\u0432\u0430\u0446\u0438\u0438 (3-30\u0441). \u041f\u043e \u0443\u043c\u043e\u043b\u0447.: 10',
   tip_failover_timeout:'\u0421\u043a\u043e\u043b\u044c\u043a\u043e \u0436\u0434\u0430\u0442\u044c tun0 \u043f\u0440\u0438 \u0430\u0432\u0442\u043e-\u043f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0438 (3-15\u0441). \u041c\u0435\u043d\u044c\u0448\u0435 = \u0431\u044b\u0441\u0442\u0440\u0435\u0435. \u041f\u043e \u0443\u043c\u043e\u043b\u0447.: 5',
@@ -527,13 +527,13 @@ function renderMonitor(){
           h('div',{className:'stat-v',style:{fontSize:'14px'}},hl.external_ip?hl.external_ip:'\u2014')),
         h('div',{className:'stat'},
           h('div',{className:'stat-l'},t('uptime')),
-          h('div',{style:{display:'flex',gap:'16px',marginTop:'4px'}},
-            h('div',null,
-              h('div',{style:{fontSize:'9px',color:'var(--tx3)',textTransform:'uppercase',marginBottom:'2px'}},t('container_uptime')),
-              h('div',{style:{fontSize:'14px',fontWeight:700,fontFamily:'var(--m)'}},fmtUptime(st?st.uptime_seconds:0))),
-            h('div',null,
-              h('div',{style:{fontSize:'9px',color:'var(--tx3)',textTransform:'uppercase',marginBottom:'2px'}},t('tt_uptime')),
-              h('div',{style:{fontSize:'14px',fontWeight:700,fontFamily:'var(--m)',color:hl.tt_uptime?'var(--gn)':'var(--tx3)'}},hl.tt_uptime?fmtUptime(hl.tt_uptime):'\u2014')))),
+          h('div',{style:{marginTop:'4px'}},
+            h('div',{style:{display:'flex',alignItems:'baseline',gap:'6px',marginBottom:'4px'}},
+              h('span',{style:{fontSize:'10px',color:'var(--tx3)',minWidth:'70px'}},t('service_label')+':'),
+              h('span',{style:{fontSize:'14px',fontWeight:700,fontFamily:'var(--m)'}},fmtUptime(st?st.uptime_seconds:0))),
+            h('div',{style:{display:'flex',alignItems:'baseline',gap:'6px'}},
+              h('span',{style:{fontSize:'10px',color:'var(--tx3)',minWidth:'70px'}},t('connection_label')+':'),
+              h('span',{style:{fontSize:'14px',fontWeight:700,fontFamily:'var(--m)',color:hl.tt_uptime?'var(--gn)':'var(--tx3)'}},hl.tt_uptime?fmtUptime(hl.tt_uptime):'\u2014')))),
         h('div',{className:'stat'},
           h('div',{className:'stat-l'},t('hostname')),
           h('div',{className:'stat-v',style:{fontSize:'14px'}},srv?srv.hostname:'\u2014')))),
@@ -638,7 +638,7 @@ function renderSettings(){
 }
 
 var _refreshTimer=null;
-function startRefresh(){clearInterval(_refreshTimer);_refreshTimer=setInterval(function(){if(S.auth&&(S.tab==='servers'||S.tab==='monitor')){loadStatus().then(R);if(S.tab==='monitor')loadNetHistory().then(function(){drawNetChart()})}},15000)}
+function startRefresh(){clearInterval(_refreshTimer);_refreshTimer=setInterval(function(){if(S.auth&&(S.tab==='servers'||S.tab==='monitor')){loadStatus().then(function(){var prev=S._prevOnBackup;S._prevOnBackup=S.status&&S.status.on_backup;if(S.status&&S.status.on_backup&&!prev){loadAll()}else{R()}});if(S.tab==='monitor')loadNetHistory().then(function(){drawNetChart()})}},10000)}
 
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&S.modal){S.modal=null;R()}});
 applyTheme();checkAuth().then(function(){if(S.auth)loadAll()});startRefresh();
