@@ -189,6 +189,12 @@ def update_server(server_id, data):
             db["servers"] = servers
             save_panel_db(db)
             _generate_toml(s, db.get("settings", {}))
+            if db.get("active_server") == server_id:
+                try:
+                    subprocess.run(["systemctl", "restart", SERVICE_NAME], timeout=10)
+                    logger.info("Active server config updated, restarted service")
+                except Exception:
+                    pass
             return s
     return None
 
