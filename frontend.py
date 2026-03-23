@@ -92,6 +92,9 @@ input,textarea,select,button{font-family:inherit;font-size:inherit}
 .tab.on{background:var(--sf2);color:var(--tx);box-shadow:var(--shadow)}
 .card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:18px;margin-bottom:14px;box-shadow:var(--shadow)}
 .card-t{font-size:12px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;color:var(--tx2);text-transform:uppercase;letter-spacing:.05em}
+.periods{display:flex;gap:2px;background:var(--bg);border-radius:7px;padding:2px;border:1px solid var(--bd)}
+.per{padding:4px 10px;border-radius:5px;border:none;background:transparent;color:var(--tx3);cursor:pointer;font-size:10px;font-weight:600;font-family:var(--m);transition:.15s}
+.per:hover{color:var(--tx2)}.per.on{background:var(--sf2);color:var(--ac);box-shadow:0 1px 4px rgba(0,0,0,.3)}
 .grid{display:grid;gap:10px}.grid2{grid-template-columns:1fr 1fr}.grid3{grid-template-columns:1fr 1fr 1fr}
 @media(max-width:640px){.grid2,.grid3{grid-template-columns:1fr}}
 .stat{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px 16px;position:relative;overflow:hidden;transition:border-color .2s}
