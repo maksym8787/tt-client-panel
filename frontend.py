@@ -395,15 +395,24 @@ function renderModal(){
         h('button',{className:'btn btn-d',onClick:function(e){if(m.onOk)m.onOk(e.currentTarget)}},t('confirm')),
         h('button',{className:'btn',onClick:close},t('cancel'))));
   }else if(m.t==='edit'){
-    var ni,hi,ui,pi,proto;var s=m.s;
-    content=h('div',{className:'md'},
+    var ni,hi,ai,ui,pi,proti,snii,ipv6i,dpii;var s=m.s;
+    content=h('div',{className:'md',style:{maxWidth:'540px'}},
       h('div',{className:'md-t'},t('edit')+': '+s.name),
-      h('div',{className:'fg'},h('label',{className:'fl'},t('name')),ni=h('input',{className:'input',value:s.name||''})),
-      h('div',{className:'fg'},h('label',{className:'fl'},t('hostname')),hi=h('input',{className:'input input-m',value:s.hostname||''})),
-      h('div',{className:'fg'},h('label',{className:'fl'},t('username')),ui=h('input',{className:'input',value:s.username||''})),
-      h('div',{className:'fg'},h('label',{className:'fl'},t('password')),pi=h('input',{className:'input',type:'password',value:s.password||''})),
+      h('div',{className:'grid grid2',style:{gap:'10px'}},
+        h('div',{className:'fg'},h('label',{className:'fl'},t('name')),ni=h('input',{className:'input',value:s.name||''})),
+        h('div',{className:'fg'},h('label',{className:'fl'},t('hostname')),hi=h('input',{className:'input input-m',value:s.hostname||''}))),
+      h('div',{className:'fg'},h('label',{className:'fl'},t('address')),ai=h('input',{className:'input input-m',value:(s.addresses||[]).join(', '),placeholder:'host:443, host2:443'})),
+      h('div',{className:'grid grid2',style:{gap:'10px'}},
+        h('div',{className:'fg'},h('label',{className:'fl'},t('username')),ui=h('input',{className:'input',value:s.username||''})),
+        h('div',{className:'fg'},h('label',{className:'fl'},t('password')),pi=h('input',{className:'input',type:'password',value:s.password||''}))),
+      h('div',{className:'grid grid2',style:{gap:'10px'}},
+        h('div',{className:'fg'},h('label',{className:'fl'},t('protocol')),proti=h('select',{className:'input'},h('option',{value:'http2',selected:s.upstream_protocol==='http2'},'HTTP/2'),h('option',{value:'http3',selected:s.upstream_protocol==='http3'},'HTTP/3'))),
+        h('div',{className:'fg'},h('label',{className:'fl'},'SNI'),snii=h('input',{className:'input input-m',value:s.custom_sni||'',placeholder:t('hostname')}))),
+      h('div',{style:{display:'flex',gap:'16px',marginBottom:'14px'}},
+        h('label',{style:{display:'flex',alignItems:'center',gap:'6px',fontSize:'12px',cursor:'pointer'}},ipv6i=h('input',{type:'checkbox',checked:s.has_ipv6!==false}),'IPv6'),
+        h('label',{style:{display:'flex',alignItems:'center',gap:'6px',fontSize:'12px',cursor:'pointer'}},dpii=h('input',{type:'checkbox',checked:!!s.anti_dpi}),'Anti-DPI')),
       h('div',{className:'bg'},
-        h('button',{className:'btn btn-p',onClick:function(){editServer(s.id,{name:ni.value,hostname:hi.value,username:ui.value,password:pi.value})}},t('save')),
+        h('button',{className:'btn btn-p',onClick:function(){var addrs=ai.value.trim()?ai.value.split(',').map(function(x){return x.trim()}).filter(Boolean):[hi.value+':443'];editServer(s.id,{name:ni.value,hostname:hi.value,addresses:addrs,username:ui.value,password:pi.value,upstream_protocol:proti.value,custom_sni:snii.value,has_ipv6:ipv6i.checked,anti_dpi:dpii.checked})}},t('save')),
         h('button',{className:'btn',onClick:close},t('cancel'))));
   }else if(m.t==='chgadmin'){
     var ap;
