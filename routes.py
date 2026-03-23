@@ -111,11 +111,13 @@ async def status(request: Request):
             return 0
 
     uptime = await asyncio.to_thread(_uptime)
+    db = await asyncio.to_thread(load_panel_db)
     return {
         "health": health,
         "active_server": active,
         "active_server_id": active_id,
         "uptime_seconds": uptime,
+        "on_backup": db.get("on_backup", False),
     }
 
 
@@ -178,7 +180,7 @@ async def remove_server(server_id: str, request: Request):
 @app.post("/api/servers/{server_id}/activate")
 async def do_activate(server_id: str, request: Request):
     await require_auth(request)
-    result = await asyncio.to_thread(activate_server, server_id)
+    result = await asyncio.to_thread(activate_server, server_id, True)
     return result
 
 

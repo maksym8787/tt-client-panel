@@ -223,15 +223,22 @@ def reorder_servers(order):
     if new_primary and new_primary["id"] != current_active and new_primary.get("enabled", True):
         logger.info("Priority changed: activating new primary %s", new_primary["id"])
         result = activate_server(new_primary["id"])
-        if not result.get("ok"):
+        if result.get("ok"):
+            db2 = load_panel_db()
+            db2["on_backup"] = False
+            save_panel_db(db2)
+        else:
             logger.warning("Primary %s failed, trying fallback", new_primary["id"])
+            db2 = load_panel_db()
+            db2["on_backup"] = True
+            save_panel_db(db2)
             for s in db["servers"][1:]:
                 if s.get("enabled", True):
                     activate_server(s["id"])
                     break
 
 
-def activate_server(server_id):
+def activate_server(server_id, manual=False):
     db = load_panel_db()
     server = None
     for s in db.get("servers", []):
@@ -261,6 +268,8 @@ def activate_server(server_id):
         return {"ok": False, "error": f"Service restart error: {e}"}
 
     db["active_server"] = server_id
+    if manual:
+        db["on_backup"] = False
     save_panel_db(db)
 
     for _ in range(15):

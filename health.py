@@ -257,6 +257,7 @@ def _try_failover():
         "to": next_id,
         "reason": f"health_check_failed_{_fail_count}x",
     }
+    db["on_backup"] = True
     db = load_panel_db()
     flog = db.get("failover_log", [])
     flog.insert(0, log_entry)
