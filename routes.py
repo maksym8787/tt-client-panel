@@ -186,7 +186,7 @@ async def do_reorder(request: Request):
 async def net_history(request: Request, hours: int = 1):
     await require_auth(request)
     import time
-    hours = max(1, min(hours, 168))
+    hours = max(1, min(hours, 8760))
     cutoff = time.time() - hours * 3600
     data = await asyncio.to_thread(get_net_history)
     filtered = [p for p in data if p.get("ts", 0) >= cutoff]

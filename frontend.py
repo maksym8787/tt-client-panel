@@ -508,7 +508,7 @@ function renderMonitor(){
       h('div',{className:'card-t'},
         h('span',null,t('network_traffic')),
         h('div',{className:'periods'},
-          [{v:1,l:'1h'},{v:6,l:'6h'},{v:24,l:'24h'},{v:168,l:'7d'}].map(function(p){
+          [{v:1,l:'1h'},{v:24,l:'24h'},{v:168,l:'7d'},{v:720,l:'30d'},{v:8760,l:'1y'}].map(function(p){
             return h('button',{className:'per'+(S.netPeriod===p.v?' on':''),onClick:function(){loadNetHistory(p.v).then(function(){drawNetChart();R()})}},p.l)}))),
       h('div',{className:'chart-wrap'},h('canvas',{id:'net-chart'}))),
     h('div',{className:'card'},
