@@ -14,7 +14,7 @@ _last_check_ts = 0
 _health_lock = threading.Lock()
 
 _net_history = []
-_NET_HISTORY_MAX = 120
+_NET_HISTORY_MAX = 20160
 _prev_rx = 0
 _prev_tx = 0
 _prev_net_ts = 0

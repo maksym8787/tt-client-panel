@@ -183,10 +183,18 @@ async def do_reorder(request: Request):
 
 
 @app.get("/api/net-history")
-async def net_history(request: Request):
+async def net_history(request: Request, hours: int = 1):
     await require_auth(request)
+    import time
+    hours = max(1, min(hours, 168))
+    cutoff = time.time() - hours * 3600
     data = await asyncio.to_thread(get_net_history)
-    return {"history": data}
+    filtered = [p for p in data if p.get("ts", 0) >= cutoff]
+    max_points = 300
+    if len(filtered) > max_points:
+        step = len(filtered) // max_points
+        filtered = filtered[::step]
+    return {"history": filtered}
 
 
 @app.get("/api/failover-log")

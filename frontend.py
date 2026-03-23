@@ -255,7 +255,7 @@ var T={en:{
 var A='/api';
 var S={auth:false,setup:false,loading:true,tab:'servers',
   servers:[],activeServerId:'',status:null,failoverLog:[],settings:{},
-  toast:null,modal:null,netHistory:[],lang:localStorage.getItem('tt_lang')||'en',
+  toast:null,modal:null,netHistory:[],netPeriod:1,lang:localStorage.getItem('tt_lang')||'en',
   theme:localStorage.getItem('tt_theme')||'system',addMode:'deeplink',flPage:0};
 
 function t(k){return(T[S.lang]||T.en)[k]||T.en[k]||k}
@@ -282,7 +282,7 @@ async function doLogout(){await api('/logout',{method:'POST'});S.auth=false;R()}
 async function loadAll(){await Promise.all([loadServers(),loadStatus()]);R()}
 async function loadServers(){try{var r=await api('/servers');S.servers=r.servers||[];S.activeServerId=r.active_server_id||''}catch(e){toast(e.message,true)}}
 async function loadStatus(){try{S.status=await api('/status')}catch(e){}}
-async function loadNetHistory(){try{var r=await api('/net-history');S.netHistory=r.history||[]}catch(e){}}
+async function loadNetHistory(hrs){hrs=hrs||S.netPeriod||1;S.netPeriod=hrs;try{var r=await api('/net-history?hours='+hrs);S.netHistory=r.history||[]}catch(e){}}
 async function loadFailoverLog(){try{var r=await api('/failover-log');S.failoverLog=r.log||[]}catch(e){toast(e.message,true)}R()}
 async function loadSettings(){try{var r=await api('/settings');S.settings=r.settings||r||{}}catch(e){toast(e.message,true)}R()}
 
@@ -502,7 +502,11 @@ function renderMonitor(){
           h('div',{className:'stat-l'},t('hostname')),
           h('div',{className:'stat-v',style:{fontSize:'14px'}},srv?srv.hostname:'\u2014')))),
     h('div',{className:'card'},
-      h('div',{className:'card-t'},t('network_traffic')),
+      h('div',{className:'card-t'},
+        h('span',null,t('network_traffic')),
+        h('div',{className:'periods'},
+          [{v:1,l:'1h'},{v:6,l:'6h'},{v:24,l:'24h'},{v:168,l:'7d'}].map(function(p){
+            return h('button',{className:'per'+(S.netPeriod===p.v?' on':''),onClick:function(){loadNetHistory(p.v).then(function(){drawNetChart();R()})}},p.l)}))),
       h('div',{className:'chart-wrap'},h('canvas',{id:'net-chart'}))),
     h('div',{className:'card'},
       h('div',{className:'card-t'},t('service_controls')),
