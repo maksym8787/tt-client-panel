@@ -272,12 +272,14 @@ def activate_server(server_id, manual=False):
         db["on_backup"] = False
     save_panel_db(db)
 
-    for _ in range(15):
+    settings = db.get("settings", {})
+    wait = settings.get("activate_timeout", 10) if manual else settings.get("failover_timeout", 5)
+    for _ in range(wait):
         time.sleep(1)
         if _check_tun_up():
             return {"ok": True, "message": "Connected"}
 
-    return {"ok": True, "message": "Service restarted, waiting for tun0"}
+    return {"ok": not manual, "message": "Service restarted, waiting for tun0"}
 
 
 def get_active_server_id():

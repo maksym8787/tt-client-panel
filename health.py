@@ -73,16 +73,23 @@ def _get_external_ip():
 def _get_tt_service_uptime():
     try:
         r = subprocess.run(
-            ["systemctl", "show", "trusttunnel-client", "-p", "ActiveEnterTimestampMonotonic"],
+            ["systemctl", "show", "trusttunnel-client", "-p", "ActiveState,ActiveEnterTimestampMonotonic"],
             capture_output=True, text=True, timeout=5
         )
+        active = False
+        enter_us = 0
         for line in r.stdout.splitlines():
-            if line.startswith("ActiveEnterTimestampMonotonic="):
+            if line.startswith("ActiveState="):
+                active = line.split("=", 1)[1].strip() == "active"
+            elif line.startswith("ActiveEnterTimestampMonotonic="):
                 v = line.split("=", 1)[1].strip()
-                if v.isdigit() and int(v) > 0:
-                    with open("/proc/uptime") as f:
-                        boot_us = int(float(f.read().split()[0]) * 1_000_000)
-                    return max(0, (boot_us - int(v)) // 1_000_000)
+                if v.isdigit():
+                    enter_us = int(v)
+        if not active or enter_us == 0:
+            return 0
+        with open("/proc/uptime") as f:
+            now_us = int(float(f.read().split()[0]) * 1_000_000)
+        return max(0, (now_us - enter_us) // 1_000_000)
     except Exception:
         pass
     return 0
@@ -257,11 +264,10 @@ def _try_failover():
         "to": next_id,
         "reason": f"health_check_failed_{_fail_count}x",
     }
-    db["on_backup"] = True
-    db = load_panel_db()
     flog = db.get("failover_log", [])
     flog.insert(0, log_entry)
     db["failover_log"] = flog[:200]
+    db["on_backup"] = True
     save_panel_db(db)
 
     with _health_lock:

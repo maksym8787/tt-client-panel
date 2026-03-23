@@ -235,6 +235,10 @@ async def update_settings(request: Request):
         settings["exclusions"] = body["exclusions"]
     if "mtu_size" in body:
         settings["mtu_size"] = max(1200, min(int(body["mtu_size"]), 9000))
+    if "activate_timeout" in body:
+        settings["activate_timeout"] = max(3, min(int(body["activate_timeout"]), 30))
+    if "failover_timeout" in body:
+        settings["failover_timeout"] = max(3, min(int(body["failover_timeout"]), 15))
     db["settings"] = settings
     await asyncio.to_thread(save_panel_db, db)
     return {"ok": True, "settings": settings}
