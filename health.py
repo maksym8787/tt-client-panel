@@ -73,23 +73,45 @@ def _get_external_ip():
 def _get_tt_service_uptime():
     try:
         r = subprocess.run(
-            ["systemctl", "show", SERVICE_NAME, "-p", "ActiveState,ActiveEnterTimestampMonotonic"],
+            ["systemctl", "show", SERVICE_NAME, "-p", "ActiveState,ActiveEnterTimestamp,ActiveEnterTimestampMonotonic"],
             capture_output=True, text=True, timeout=5
         )
         active = False
         enter_us = 0
+        enter_wall = ""
         for line in r.stdout.splitlines():
             if line.startswith("ActiveState="):
                 active = line.split("=", 1)[1].strip() == "active"
             elif line.startswith("ActiveEnterTimestampMonotonic="):
                 v = line.split("=", 1)[1].strip()
-                if v.isdigit():
+                if v.isdigit() and int(v) > 0:
                     enter_us = int(v)
-        if not active or enter_us == 0:
+            elif line.startswith("ActiveEnterTimestamp=") and not line.startswith("ActiveEnterTimestampMonotonic"):
+                enter_wall = line.split("=", 1)[1].strip()
+        if not active:
             return 0
-        with open("/proc/uptime") as f:
-            now_us = int(float(f.read().split()[0]) * 1_000_000)
-        return max(0, (now_us - enter_us) // 1_000_000)
+        if enter_us > 0:
+            with open("/proc/uptime") as f:
+                now_us = int(float(f.read().split()[0]) * 1_000_000)
+            return max(0, (now_us - enter_us) // 1_000_000)
+        if enter_wall:
+            from email.utils import parsedate_to_datetime
+            from datetime import datetime, timezone
+            try:
+                dt = datetime.strptime(enter_wall.split(";")[0].strip(), "%a %Y-%m-%d %H:%M:%S %Z")
+                return max(0, int((datetime.now() - dt).total_seconds()))
+            except Exception:
+                pass
+            try:
+                import time as _t
+                for fmt in ["%a %Y-%m-%d %H:%M:%S %Z", "%Y-%m-%d %H:%M:%S %Z"]:
+                    try:
+                        st = _t.strptime(enter_wall.strip(), fmt)
+                        return max(0, int(_t.time() - _t.mktime(st)))
+                    except ValueError:
+                        continue
+            except Exception:
+                pass
     except Exception:
         pass
     return 0

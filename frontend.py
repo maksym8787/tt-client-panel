@@ -429,7 +429,8 @@ function renderStatusBar(){
 
 function renderServers(){
   var sorted=S.servers.slice().sort(function(a,b){return(a.priority||0)-(b.priority||0)});
-  var onBackup=S.status&&S.status.on_backup;
+  var onBackup=false;
+  if(S.activeServerId&&sorted.length>1&&sorted[0].enabled&&sorted[0].id!==S.activeServerId)onBackup=true;
   return h('div',null,
     renderStatusBar(),
     onBackup?h('div',{style:{background:'var(--orbg)',border:'1px solid rgba(245,158,11,.25)',borderRadius:'var(--r2)',padding:'10px 16px',marginBottom:'10px',fontSize:'12px',color:'var(--or)',display:'flex',alignItems:'center',gap:'8px'}},
