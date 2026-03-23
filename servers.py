@@ -271,6 +271,11 @@ def activate_server(server_id, manual=False):
     if manual:
         db["on_backup"] = False
     save_panel_db(db)
+    try:
+        from health import reset_external_ip_cache
+        reset_external_ip_cache()
+    except Exception:
+        pass
 
     settings = db.get("settings", {})
     wait = settings.get("activate_timeout", 10) if manual else settings.get("failover_timeout", 5)
