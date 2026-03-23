@@ -486,8 +486,10 @@ function moveServer(idx,dir){
   var sorted=S.servers.slice().sort(function(a,b){return(a.priority||0)-(b.priority||0)});
   var ni=idx+dir;if(ni<0||ni>=sorted.length)return;
   var tmp=sorted[idx];sorted[idx]=sorted[ni];sorted[ni]=tmp;
-  reorderServers(sorted.map(function(s){return s.id}));
-  S.servers=sorted.map(function(s,i){s.priority=i;return s});R();
+  S.servers=sorted.map(function(s,i){s.priority=i+1;return s});
+  S.activeServerId=sorted[0].id;
+  R();
+  reorderServers(sorted.map(function(s){return s.id})).then(function(){loadAll()});
 }
 
 function renderAddServer(){
