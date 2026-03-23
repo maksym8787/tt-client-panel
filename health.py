@@ -79,27 +79,23 @@ def _get_tt_service_uptime():
     try:
         r = subprocess.run(
             ["systemctl", "show", SERVICE_NAME, "--no-pager",
-             "-p", "ActiveState,ActiveEnterTimestampMonotonic"],
+             "-p", "ActiveState,ActiveEnterTimestamp"],
             capture_output=True, text=True, timeout=5
         )
         active = False
-        enter_us = 0
+        enter_ts = ""
         for line in r.stdout.splitlines():
             if line.startswith("ActiveState="):
                 active = line.split("=", 1)[1].strip() == "active"
-            elif line.startswith("ActiveEnterTimestampMonotonic="):
-                v = line.split("=", 1)[1].strip()
-                if v and v != "0":
-                    try:
-                        enter_us = int(v)
-                    except ValueError:
-                        pass
-        if not active or enter_us <= 0:
+            elif line.startswith("ActiveEnterTimestamp=") and "Monotonic" not in line:
+                enter_ts = line.split("=", 1)[1].strip()
+        if not active or not enter_ts:
             return 0
-        with open("/proc/uptime") as f:
-            now_us = int(float(f.read().split()[0]) * 1_000_000)
-        result = max(0, (now_us - enter_us) // 1_000_000)
-        return result
+        import subprocess as _sp
+        r2 = _sp.run(["date", "-d", enter_ts, "+%s"], capture_output=True, text=True, timeout=5)
+        if r2.returncode == 0 and r2.stdout.strip():
+            enter_epoch = int(r2.stdout.strip())
+            return max(0, int(time.time()) - enter_epoch)
     except Exception as e:
         logger.debug("tt_uptime error: %s", e)
     return 0
