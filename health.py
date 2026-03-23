@@ -296,9 +296,37 @@ def health_loop():
                 fails = _do_health_check()
                 if fails > 0:
                     _try_failover()
+            if int(time.time()) % 300 < max(10, interval):
+                _cleanup_rate_limits()
+                _cleanup_sessions()
         except Exception as e:
             logger.error("Health check error: %s", e)
         _shutdown_event.wait(max(10, interval))
+
+
+def _cleanup_rate_limits():
+    from auth import _login_lock, _login_attempts
+    now = time.time()
+    with _login_lock:
+        stale = [ip for ip, attempts in _login_attempts.items() if all(now - t > 300 for t in attempts)]
+        for ip in stale:
+            del _login_attempts[ip]
+
+
+def _cleanup_sessions():
+    try:
+        db = load_panel_db()
+        sessions = db.get("sessions", {})
+        ttl = db.get("settings", {}).get("session_ttl", 86400)
+        now = time.time()
+        expired = [k for k, v in sessions.items() if now - v.get("created", 0) > ttl]
+        if expired:
+            for k in expired:
+                del sessions[k]
+            db["sessions"] = sessions
+            save_panel_db(db)
+    except Exception:
+        pass
 
 
 def start_health_thread():
