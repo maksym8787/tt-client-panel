@@ -49,10 +49,13 @@ function moveServer(idx,dir){
   var sorted=S.servers.slice().sort(function(a,b){return(a.priority||0)-(b.priority||0)});
   var ni=idx+dir;if(ni<0||ni>=sorted.length)return;
   var tmp=sorted[idx];sorted[idx]=sorted[ni];sorted[ni]=tmp;
-  S.servers=sorted.map(function(s,i){s.priority=i+1;return s});
-  S.activeServerId=sorted[0].id;
+  sorted.forEach(function(s,i){s.priority=i+1});
+  S.servers=sorted;
   R();
-  reorderServers(sorted.map(function(s){return s.id})).then(function(){loadAll()});
+  toast(t('activating')+'...');
+  reorderServers(sorted.map(function(s){return s.id})).then(function(){
+    setTimeout(function(){loadAll()},2000);
+  });
 }
 
 function renderAddServer(){
